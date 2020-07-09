@@ -23,7 +23,6 @@ vector<Process>& System::Processes() {
     for(int pid : LinuxParser::Pids()){
         processes_.push_back(Process(pid));
     }
-
     return processes_; 
 }
 
