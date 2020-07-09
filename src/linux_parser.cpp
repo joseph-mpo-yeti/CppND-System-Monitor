@@ -46,7 +46,7 @@ string LinuxParser::Kernel() {
     std::istringstream linestream(line);
     linestream >> os >> version >> kernel;
   }
-  return kernel;
+  return version;
 }
 
 // BONUS: Update this to use std::filesystem
@@ -70,7 +70,28 @@ vector<int> LinuxParser::Pids() {
 }
 
 // TODO: Read and return the system memory utilization
-float LinuxParser::MemoryUtilization() { return 0.0; }
+float LinuxParser::MemoryUtilization() {
+    float memTotal, memFree;
+    string line;
+    std::ifstream filestream(LinuxParser::kProcDirectory + LinuxParser::kMeminfoFilename);
+    
+    if(filestream.is_open()){
+        while (std::getline(filestream, line)) {
+            std::replace(line.begin(), line.end(), ':', ' ');
+            std::istringstream linestream(line);
+            string key;
+            float value;
+            linestream >> key >> value;
+            if (key == "MemTotal") {
+                memTotal = value;
+            }
+            if (key == "MemFree") {
+                memFree = value;
+            }
+        }
+    }
+    return (memTotal - memFree ) / memTotal;   
+}
 
 // TODO: Read and return the system uptime
 long LinuxParser::UpTime() {
@@ -138,7 +159,17 @@ int LinuxParser::RunningProcesses() {
 
 // TODO: Read and return the command associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Command(int pid[[maybe_unused]]) { return string(); }
+string LinuxParser::Command(int pid) { 
+    string line, cmd;
+    std::ifstream filestream(LinuxParser::kProcDirectory + std::to_string(pid) + LinuxParser::kCmdlineFilename);
+    if(filestream.is_open()){
+        if(getline(filestream, line)){
+            return line;
+        }
+    }
+
+    return "";
+}
 
 // TODO: Read and return the memory used by a process
 // REMOVE: [[maybe_unused]] once you define the function
@@ -154,4 +185,16 @@ string LinuxParser::User(int pid[[maybe_unused]]) { return string(); }
 
 // TODO: Read and return the uptime of a process
 // REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::UpTime(int pid[[maybe_unused]]) { return 0; }
+long LinuxParser::UpTime(int pid) {
+    std::ifstream file(LinuxParser::kProcDirectory + std::to_string(pid) + LinuxParser::kStatFilename);
+    string val, line;
+    if(std::getline(file, line)){
+        std::istringstream str_stream(line);
+        for(u_int i=0;i<=21;i++){
+            str_stream >> val;
+        }
+        return std::stoi(val); 
+    }
+
+    return 0l;
+}

@@ -19,7 +19,13 @@ using std::ifstream;
 Processor& System::Cpu() { return cpu_; }
 
 // TODO: Return a container composed of the system's processes
-vector<Process>& System::Processes() { return processes_; }
+vector<Process>& System::Processes() { 
+    for(int pid : LinuxParser::Pids()){
+        processes_.push_back(Process(pid));
+    }
+
+    return processes_; 
+}
 
 // TODO: Return the system's kernel identifier (string)
 std::string System::Kernel() {
@@ -27,7 +33,9 @@ std::string System::Kernel() {
 }
 
 // TODO: Return the system's memory utilization
-float System::MemoryUtilization() { return 0.0; }
+float System::MemoryUtilization() { 
+    return LinuxParser::MemoryUtilization(); 
+}
 
 // TODO: Return the operating system name
 std::string System::OperatingSystem() { 
